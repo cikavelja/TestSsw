@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en" class="h-100">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+    <meta name="generator" content="Hugo 0.84.0">
+    <title>Sticky Footer Navbar Template · Bootstrap v5.0</title>
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/sticky-footer-navbar/">
+
+
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://getbootstrap.com/docs/5.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/apple-touch-icon.png"
+        sizes="180x180">
+    <link rel="icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/favicon-32x32.png" sizes="32x32"
+        type="image/png">
+    <link rel="icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/favicon-16x16.png" sizes="16x16"
+        type="image/png">
+    <link rel="manifest" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/manifest.json">
+    <link rel="mask-icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/safari-pinned-tab.svg"
+        color="#7952b3">
+    <link rel="icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/favicon.ico">
+    <meta name="theme-color" content="#7952b3">
+
+
+
+
+
+    <!-- Custom styles for this template -->
+    <link href="https://getbootstrap.com/docs/5.0/examples/sticky-footer-navbar/sticky-footer-navbar.css"
+        rel="stylesheet">
+</head>
+
+<body class="d-flex flex-column h-100">
+
+
+    <!-- Begin page content -->
+    <main class="flex-shrink-0">
+        <div class="container">
+            <!-- Add a text box and a button to invoke the SignalR method -->
+            <div class="mb-3">
+                <input type="text" id="accessTokenInput" class="form-control" placeholder="Enter Access Token">
+            </div>
+            <button class="btn btn-primary" id="btnExecute">Call</button>
+            <div class="mb-3">
+                <input type="text" id="messageInput" class="form-control" placeholder="Enter a message">
+            </div>
+            <button class="btn btn-primary" onclick="sendMessage()">Send Message</button>
+
+        </div>
+    </main>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+    <script src="https://getbootstrap.com/docs/5.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <script>
+
+        // Shorthand for $( document ).ready()
+        $(function () {
+
+
+            console.log("ready!");
+
+//             let request = new XMLHttpRequest();
+
+// request.open('POST', "https://api.openrouteservice.org/v2/directions/driving-car/json");
+
+// request.setRequestHeader('Accept', 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8');
+// request.setRequestHeader('Content-Type', 'application/json');
+// request.setRequestHeader('Authorization', '5b3ce3597851110001cf6248bd504e5e5f5f43a4af329ecf40eb406c');
+
+// request.onreadystatechange = function () {
+//   if (this.readyState === 4) {
+//     console.log('Status:', this.status);
+//     console.log('Headers:', this.getAllResponseHeaders());
+//     console.log('Body:', this.responseText);
+//   }
+// };
+
+// const body = '{"coordinates":[[8.681495,49.41461],[8.686507,49.41943],[8.687872,49.420318]]}';
+// request.send(body);
+// debugger;
+
+            function calculateIntermediateCoordinates(startLat, startLon, endLat, endLon, numPoints) {
+                const intermediateCoordinates = [];
+
+                // Calculate the step size for latitude and longitude
+                const deltaLat = (endLat - startLat) / numPoints;
+                const deltaLon = (endLon - startLon) / numPoints;
+
+                for (let i = 0; i <= numPoints; i++) {
+                    const lat = startLat + i * deltaLat;
+                    const lon = startLon + i * deltaLon;
+                    intermediateCoordinates.push({ latitude: lat, longitude: lon });
+                }
+
+                return intermediateCoordinates;
+            }
+
+            const startLatitudea = 51.221229812864735; // Nis, Serbia, Krste Stefanovica 2
+            const startLongitudea = 4.429844026382357;
+            const endLatitudea = 51.21913395996466; // Pantalejska 34
+            const endLongitudea = 4.4313447634162255;
+            const numberOfPointsa = 30; // Adjust as needed
+
+            const intermediateCoordinatesa = calculateIntermediateCoordinates(
+                startLatitudea,
+                startLongitudea,
+                endLatitudea,
+                endLongitudea,
+                numberOfPointsa
+            );
+
+            const startLatitude = 40.31520470362958; // Nis, Serbia, Krste Stefanovica 2
+            const startLongitude = 23.062849225875098;
+            const endLatitude = 40.313048984190154; // Pantalejska 34
+            const endLongitude = 23.062653369769347;
+            const numberOfPoints = 30; // Adjust as needed
+
+            const intermediateCoordinates = calculateIntermediateCoordinates(
+                startLatitude,
+                startLongitude,
+                endLatitude,
+                endLongitude,
+                numberOfPoints
+            );
+
+
+            const startLatitudec = 38.12351526634469; // Nis, Serbia, Krste Stefanovica 2
+            const startLongitudec = 13.35392782711752;
+            const endLatitudec = 38.121289539994194; // Pantalejska 34
+            const endLongitudec = 13.348189019766759;
+            const numberOfPointsc = 30; // Adjust as needed
+
+            const intermediateCoordinatesc = calculateIntermediateCoordinates(
+                startLatitudec,
+                startLongitudec,
+                endLatitudec,
+                endLongitudec,
+                numberOfPointsc
+            );
+
+            const startLatituded = 30.02447755505306; // Nis, Serbia, Krste Stefanovica 2
+            const startLongituded = 31.361635619985076;
+            const endLatituded = 30.019512014723393; // Pantalejska 34
+            const endLongituded = 31.38285505945791;
+            const numberOfPointsd = 30; // Adjust as needed
+
+            const intermediateCoordinatesd = calculateIntermediateCoordinates(
+                startLatituded,
+                startLongituded,
+                endLatituded,
+                endLongituded,
+                numberOfPointsd
+            );
+
+
+            //const graphqlEndpoint = 'http://localhost:5157/graphql/';
+            const graphqlEndpoint = 'https://gps-api-7.azurewebsites.net/graphql/';
+            const delayBetweenRequests = 1000; // 1 second
+
+            function sendMutationWithDelaya(index) {
+                if (index >= intermediateCoordinatesa.length) {
+                    return; // All requests are complete
+                }
+
+                const pair = intermediateCoordinatesa[index];
+                const mutation = `
+    mutation {
+      insertPossition(model: {
+        latitude: ${pair.latitude},
+        longitude: ${pair.longitude},
+        
+        speed: 90,
+        userId: "b4531143-bb22-491f-b6f6-f0f35b5ad39d"
+      }) {
+        id
+      }
+    }
+  `;
+
+                $.ajax({
+                    url: graphqlEndpoint,
+                    type: 'POST',
+                    headers: {
+                        Authorization: `
+                       Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJVc2VyQSIsImp0aSI6IjAwN2RkNjU2LWE1MTAtNDRhYy1hMDBjLTc3YWVmN2Y3ODNiYyIsImVtYWlsIjoiYUBhLm5ldCIsInVpZCI6ImI0NTMxMTQzLWJiMjItNDkxZi1iNmY2LWYwZjM1YjVhZDM5ZCIsImV4cCI6MTY5ODg2NzA4NywiaXNzIjoiUlRfR1BTX0NvcmVfN19JZGVudGl0eSIsImF1ZCI6IlJUX0dQU19Db3JlXzdfSWRlbnRpdHlVc2VyIn0.e6QRiOJ_iUSjWDkhTEHjm1EDMthFtp1vMrbu5RMsuuI
+` // Add the authorization header
+                    },
+                    data: JSON.stringify({ query: mutation }),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        console.log(`Mutation succeeded for pair: ${pair.latitude}, ${pair.longitude}`);
+                        setTimeout(() => {
+                            sendMutationWithDelaya(index + 1); // Send the next request after the delay
+                        }, delayBetweenRequests);
+                    },
+                    error: function (error) {
+                        console.error(`Error for pair: ${pair.latitude}, ${pair.longitude}`, error);
+                        setTimeout(() => {
+                            sendMutationWithDelaya(index + 1); // Send the next request after the delay
+                        }, delayBetweenRequests);
+                    }
+                });
+            }
+
+            function sendMutationWithDelayb(index) {
+                if (index >= intermediateCoordinates.length) {
+                    return; // All requests are complete
+                }
+
+                const pair = intermediateCoordinates[index];
+                const mutation = `
+    mutation {
+      insertPossition(model: {
+        latitude: ${pair.latitude},
+        longitude: ${pair.longitude},
+        
+        speed: 90,
+        userId: "226da16f-780f-4396-a7b1-d8a1ace97f6e"
+      }) {
+        id
+      }
+    }
+  `;
+
+                $.ajax({
+                    url: graphqlEndpoint,
+                    type: 'POST',
+                    headers: {
+                        Authorization: `
+                       Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJVc2VyQiIsImp0aSI6IjVjY2Y1Y2VkLWQ0M2EtNDFjMi05MzIwLTY1ODgxZjZiODY1MyIsImVtYWlsIjoiYkBiLm5ldCIsInVpZCI6IjIyNmRhMTZmLTc4MGYtNDM5Ni1hN2IxLWQ4YTFhY2U5N2Y2ZSIsImV4cCI6MTY5ODkyMDA2OSwiaXNzIjoiUlRfR1BTX0NvcmVfN19JZGVudGl0eSIsImF1ZCI6IlJUX0dQU19Db3JlXzdfSWRlbnRpdHlVc2VyIn0.vh6C-OuSnCM0Jcfh48IDQz6WzSFEeK8PRQZjgMk3a90
+` // Add the authorization header
+                    },
+                    data: JSON.stringify({ query: mutation }),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        console.log(`Mutation succeeded for pair: ${pair.latitude}, ${pair.longitude}`);
+                        setTimeout(() => {
+                            sendMutationWithDelayb(index + 1); // Send the next request after the delay
+                        }, delayBetweenRequests);
+                    },
+                    error: function (error) {
+                        console.error(`Error for pair: ${pair.latitude}, ${pair.longitude}`, error);
+                        setTimeout(() => {
+                            sendMutationWithDelayb(index + 1); // Send the next request after the delay
+                        }, delayBetweenRequests);
+                    }
+                });
+            }
+
+            function sendMutationWithDelayc(index) {
+                if (index >= intermediateCoordinatesc.length) {
+                    return; // All requests are complete
+                }
+
+                const pair = intermediateCoordinatesc[index];
+                const mutation = `
+    mutation {
+      insertPossition(model: {
+        latitude: ${pair.latitude},
+        longitude: ${pair.longitude},
+        
+        speed: 90,
+        userId: "184ae9ff-5f73-4c8b-bce7-2e9ec5548836"
+      }) {
+        id
+      }
+    }
+  `;
+
+                $.ajax({
+                    url: graphqlEndpoint,
+                    type: 'POST',
+                    headers: {
+                        Authorization: `
+                       Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJVc2VyQyIsImp0aSI6IjEyYzU5MjhiLWJjZjUtNDYzMy1hMGQyLTQ3NGRiMzBiMjRmYyIsImVtYWlsIjoiY0BjLm5ldCIsInVpZCI6IjE4NGFlOWZmLTVmNzMtNGM4Yi1iY2U3LTJlOWVjNTU0ODgzNiIsImV4cCI6MTY5ODkyMzIyNSwiaXNzIjoiUlRfR1BTX0NvcmVfN19JZGVudGl0eSIsImF1ZCI6IlJUX0dQU19Db3JlXzdfSWRlbnRpdHlVc2VyIn0.bHa27ruyfRoB2SIpVRfjbQjB7InmCc9gTJk2wt7Mhf0
+` // Add the authorization header
+                    },
+                    data: JSON.stringify({ query: mutation }),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        console.log(`Mutation succeeded for pair: ${pair.latitude}, ${pair.longitude}`);
+                        setTimeout(() => {
+                            sendMutationWithDelayc(index + 1); // Send the next request after the delay
+                        }, delayBetweenRequests);
+                    },
+                    error: function (error) {
+                        console.error(`Error for pair: ${pair.latitude}, ${pair.longitude}`, error);
+                        setTimeout(() => {
+                            sendMutationWithDelayc(index + 1); // Send the next request after the delay
+                        }, delayBetweenRequests);
+                    }
+                });
+            }
+
+            function sendMutationWithDelayd(index) {
+                if (index >= intermediateCoordinatesd.length) {
+                    return; // All requests are complete
+                }
+
+                const pair = intermediateCoordinatesd[index];
+                const mutation = `
+    mutation {
+      insertPossition(model: {
+        latitude: ${pair.latitude},
+        longitude: ${pair.longitude},
+        
+        speed: 90,
+        userId: "949423e2-e738-4458-8b71-446d9a98d01a"
+      }) {
+        id
+      }
+    }
+  `;
+
+                $.ajax({
+                    url: graphqlEndpoint,
+                    type: 'POST',
+                    headers: {
+                        Authorization: `
+                       Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJVc2VyRCIsImp0aSI6ImVlZjQ2OTVhLTdhNTYtNDYxOC04N2NjLTkwNTE5ZTE5ZjQyMCIsImVtYWlsIjoiZEBkLm5ldCIsInVpZCI6Ijk0OTQyM2UyLWU3MzgtNDQ1OC04YjcxLTQ0NmQ5YTk4ZDAxYSIsImV4cCI6MTY5ODkyMzI5MCwiaXNzIjoiUlRfR1BTX0NvcmVfN19JZGVudGl0eSIsImF1ZCI6IlJUX0dQU19Db3JlXzdfSWRlbnRpdHlVc2VyIn0.hFUeKMIhregIsAkQLT5Y6HadrDAsOb_6ysgPopULt64
+` // Add the authorization header
+                    },
+                    data: JSON.stringify({ query: mutation }),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        console.log(`Mutation succeeded for pair: ${pair.latitude}, ${pair.longitude}`);
+                        setTimeout(() => {
+                            sendMutationWithDelayd(index + 1); // Send the next request after the delay
+                        }, delayBetweenRequests);
+                    },
+                    error: function (error) {
+                        console.error(`Error for pair: ${pair.latitude}, ${pair.longitude}`, error);
+                        setTimeout(() => {
+                            sendMutationWithDelayd(index + 1); // Send the next request after the delay
+                        }, delayBetweenRequests);
+                    }
+                });
+            }
+
+            // Start sending mutations with a delay
+
+            $(document).on('click', '#btnExecute', function () {
+                sendMutationWithDelaya(0);
+                sendMutationWithDelayb(0);
+                sendMutationWithDelayc(0);
+                sendMutationWithDelayd(0);
+
+            });
+        });
+
+    </script>
+
+</body>
+
+</html>

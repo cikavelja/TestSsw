@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geolocation Example</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Login</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="inputEmail">Email</label>
+                            <input type="email" class="form-control" id="inputEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputPassword">Password</label>
+                            <input type="password" class="form-control" id="inputPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+        <h1>Geolocation Example</h1>
+
+        <!-- Login/Logout Button -->
+        <button id="loginBtn" class="btn btn-primary" data-toggle="modal" data-target="#loginModal">Login</button>
+        <button id="logoutBtn" class="btn btn-danger d-none">Logout</button>
+
+        <!-- Get Location Button -->
+        <button id="getLocationBtn" class="btn btn-success" disabled>Get Location</button>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            let watchID = null;
+            const graphqlEndpoint = 'https://gps-api-7.azurewebsites.net/graphql/';
+
+            // Check if there is a token in local storage
+            let authToken = localStorage.getItem("gpsToken");
+            let authId = localStorage.getItem("gpsId");
+
+            if (authToken) {
+                // Enable Get Location button if a token exists
+                $("#getLocationBtn").prop("disabled", false);
+                $("#loginBtn").addClass("d-none");
+                $("#logoutBtn").removeClass("d-none");
+            } else {
+                // Show login modal and disable Get Location button if no token exists
+                $("#loginModal").modal("show");
+                $("#getLocationBtn").prop("disabled", true);
+            }
+
+            // Event listener for the login form submission
+            $("#loginForm").submit(function (event) {
+                event.preventDefault();
+
+                // Perform authentication (replace this with your actual authentication logic)
+                let email = $("#inputEmail").val();
+                let password = $("#inputPassword").val();
+
+                const loginRequest = JSON.stringify({
+                    query: "query {  authenticate(    authenticationRequest: {      email: \"" + email + "\",        password: \"" + password + "\"      }  ) {    id    userName    email    token  }}"
+                });
+                debugger;
+                $.ajax({
+                    url: graphqlEndpoint,
+                    type: 'POST',
+                    data: loginRequest,
+                    contentType: 'application/json',
+                    success: function (response) {
+                        // Assume authentication is successful and generate a sample token
+                        let gpsToken = response.data.authenticate.token;
+                        let gpsId = response.data.authenticate.id;
+                        localStorage.setItem("gpsToken", gpsToken);
+                        localStorage.setItem("gpsId", gpsId);
+
+                        // Hide the login modal, enable Get Location button, and update buttons
+                        $("#loginModal").modal("hide");
+                        $("#getLocationBtn").prop("disabled", false);
+                        $("#loginBtn").addClass("d-none");
+                        $("#logoutBtn").removeClass("d-none");
+
+                    },
+                    error: function (error) {
+                        console.error(`Error for login`, JSON.parse(error.responseText).errors[0].message);
+                        alert(JSON.parse(error.responseText).errors[0].message);
+                    }
+                });
+
+            });
+
+            // Event listener for the logout button
+            $("#logoutBtn").click(function () {
+                // Remove the token from local storage, disable Get Location button, and update buttons
+                localStorage.removeItem("gpsToken");
+                localStorage.removeItem("gpsId");
+                $("#getLocationBtn").prop("disabled", true);
+                $("#loginBtn").removeClass("d-none");
+                $("#logoutBtn").addClass("d-none");
+                stopWatchingLocation();
+            });
+
+            // Event listener for the Get Location button click
+            // Event listener for the button click
+            $("#getLocationBtn").on("click", function () {
+                startWatchingLocation();
+            });
+            function startWatchingLocation() {
+                // Check if geolocation is supported
+                if ("geolocation" in navigator) {
+                    // Start watching for location changes
+                    watchID = navigator.geolocation.watchPosition(function (position) {
+                        // Extract latitude and longitude
+                        var latitude = position.coords.latitude;
+                        var longitude = position.coords.longitude;
+
+                        // Send the location as a POST request to a sample API
+                        const mutation = `
+                        mutation {
+                        insertPossition(model: {
+                            latitude: ${latitude},
+                            longitude: ${longitude},
+                            
+                            speed: 90,
+                            userId: "${authId}"
+                        }) {
+                            id
+                        }
+                        }
+                    `;
+
+                        $.ajax({
+                            url: graphqlEndpoint,
+                            type: 'POST',
+                            headers: {
+                                Authorization: `Bearer ` + authToken// Add the authorization header
+                            },
+                            data: JSON.stringify({ query: mutation }),
+                            contentType: 'application/json',
+                            success: function (response) {
+                                console.log(`Mutation succeeded for pair: ${latitude}, ${longitude}`);
+                                // setTimeout(() => {
+                                //     sendMutationWithDelayb(index + 1); // Send the next request after the delay
+                                // }, delayBetweenRequests);
+                            },
+                            error: function (error) {
+                                console.error(`Error for pair: ${latitude}, ${longitude}`, JSON.parse(error.responseText).errors[0].message);
+                                // setTimeout(() => {
+                                //     sendMutationWithDelayb(index + 1); // Send the next request after the delay
+                                // }, delayBetweenRequests);
+                            }
+                        });
+
+                    }, function (error) {
+                        alert(JSON.parse(error.responseText).errors[0].message);
+                        console.error("Error getting location:", error.message);
+                    });
+                } else {
+                    console.log("Geolocation is not supported by this browser.");
+                }
+
+
+            }
+            function stopWatchingLocation() {
+                // Stop watching for location changes
+                if (watchID) {
+                    navigator.geolocation.clearWatch(watchID);
+                }
+            }
+
+        });
+
+
+
+    </script>
+
+</body>
+
+</html>

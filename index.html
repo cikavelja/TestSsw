@@ -6,8 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geolocation Example</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link href="https://codeseven.github.io/toastr/build/toastr.min.css" rel="stylesheet" type="text/css">
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://codeseven.github.io/toastr/build/toastr.min.js"></script>
+
 </head>
 
 <body>
@@ -53,6 +56,24 @@
 
     <script>
         $(document).ready(function () {
+
+            toastr.options = {
+                "closeButton": true,
+                "newestOnTop": false,
+                "progressBar": true,
+                "positionClass": "toast-bottom-center",
+                "preventDuplicates": false,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+                }
+
             let watchID = null;
             const graphqlEndpoint = 'https://gps-api-7.azurewebsites.net/graphql/';
 
@@ -104,7 +125,8 @@
                     },
                     error: function (error) {
                         console.error(`Error for login`, JSON.parse(error.responseText).errors[0].message);
-                        alert(JSON.parse(error.responseText).errors[0].message);
+                        //alert(JSON.parse(error.responseText).errors[0].message);
+                        toastr.error(JSON.parse(error.responseText).errors[0].message);
                     }
                 });
 
@@ -160,12 +182,14 @@
                             contentType: 'application/json',
                             success: function (response) {
                                 console.log(`Mutation succeeded for pair: ${latitude}, ${longitude}`);
+                                toastr.success("Data sent");
                                 // setTimeout(() => {
                                 //     sendMutationWithDelayb(index + 1); // Send the next request after the delay
                                 // }, delayBetweenRequests);
                             },
                             error: function (error) {
-                                console.error(`Error for pair: ${latitude}, ${longitude}`, JSON.parse(error.responseText).errors[0].message);
+                                //console.error(`Error for pair: ${latitude}, ${longitude}`, JSON.parse(error.responseText).errors[0].message);
+                                toastr.error(JSON.parse(error));
                                 // setTimeout(() => {
                                 //     sendMutationWithDelayb(index + 1); // Send the next request after the delay
                                 // }, delayBetweenRequests);
@@ -175,10 +199,12 @@
                     }, function (error) {
                         alert(JSON.parse(error.responseText).errors[0].message);
                         console.error("Error getting location:", error.message);
+                        toastr.error(JSON.parse(error));
                     });
                 } else {
                     console.log("Geolocation is not supported by this browser.");
-                }
+                    toastr.info("Geolocation is not supported by this browser.");
+}
 
 
             }

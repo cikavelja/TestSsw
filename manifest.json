@@ -1,0 +1,16 @@
+
+{
+    "name": "GPS-X",
+    "short_name": "GPS-X",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#007bff",
+    "icons": [
+      {
+        "src": "/gps_logo.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      }
+    ]
+  }

@@ -2,6 +2,8 @@
 <html lang="en">
 
 <head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#007bff">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geolocation Example</title>
@@ -42,7 +44,15 @@
             </div>
         </div>
     </div>
-
+    <!-- Checkbox for Wake Lock API -->
+    <div class="container mt-3">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="wakeLockCheckbox">
+            <label class="form-check-label" for="wakeLockCheckbox">
+                Enable Screen Wake Lock
+            </label>
+        </div>
+    </div>
     <div class="container mt-5">
         <h1>Geolocation Example</h1>
 
@@ -54,6 +64,19 @@
         <button id="getLocationBtn" class="btn btn-success" disabled>Get Location</button>
     </div>
 
+    <script>
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('service-worker.js')
+              .then(registration => {
+                console.log('Service Worker registered: ', registration);
+              })
+              .catch(error => {
+                console.error('Service Worker registration failed: ', error);
+              });
+          });
+        }
+      </script>
     <script>
         $(document).ready(function () {
 
@@ -215,6 +238,38 @@
                 }
             }
 
+
+            // Event listener for the checkbox
+            $('#wakeLockCheckbox').change(function () {
+            if (this.checked) {
+                requestWakeLock(); // Request wake lock if checked
+            } else {
+                releaseWakeLock(); // Release wake lock if unchecked
+            }
+        });
+
+        // Function to request wake lock
+        let wakeLock = null;
+        const requestWakeLock = async () => {
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+                wakeLock.addEventListener('release', () => {
+                    console.log('Screen Wake Lock released:', wakeLock.released);
+                });
+                console.log('Screen Wake Lock acquired:', wakeLock);
+            } catch (err) {
+                console.error(`${err.name}, ${err.message}`);
+            }
+        };
+
+        // Function to release wake lock
+        const releaseWakeLock = () => {
+            if (wakeLock) {
+                wakeLock.release();
+                wakeLock = null;
+                console.log('Screen Wake Lock released');
+            }
+        };
         });
 
 

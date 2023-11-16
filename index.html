@@ -179,7 +179,7 @@
                         // Extract latitude and longitude
                         var latitude = position.coords.latitude;
                         var longitude = position.coords.longitude;
-
+                        var speed = position.coords.speed;
                         // Send the location as a POST request to a sample API
                         const mutation = `
                         mutation {
@@ -187,7 +187,7 @@
                             latitude: ${latitude},
                             longitude: ${longitude},
                             
-                            speed: 90,
+                            speed: ${speed},
                             userId: "${authId}"
                         }) {
                             id

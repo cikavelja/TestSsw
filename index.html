@@ -102,8 +102,18 @@
             }
 
             if ($('#sendDataCheckbox').is(':checked')) {
-                            startWatchingLocation();
+                startWatchingLocation();
+            } else {
+
             }
+            $('#sendDataCheckbox').on('change', function () { // on change of state
+                if (this.checked) // if changed state is "CHECKED"
+                {
+                    startWatchingLocation();
+                } else {
+                    stopWatchingLocation();
+                }
+            })
 
             $("#loginForm").submit(function (event) {
                 event.preventDefault();
@@ -130,9 +140,6 @@
                         $("#loginBtn").addClass("d-none");
                         $("#logoutBtn").removeClass("d-none");
 
-                        if ($('#sendDataCheckbox').is(':checked')) {
-                            startWatchingLocation();
-                        }
                     },
                     error: function (error) {
                         console.error(`Error for login`, JSON.parse(error.responseText).errors[0].message);

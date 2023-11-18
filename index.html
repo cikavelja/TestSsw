@@ -91,24 +91,23 @@
             let watchID = null;
             const graphqlEndpoint = 'https://gps-api-7.azurewebsites.net/graphql/';
 
-            // Check if there is a token in local storage
             let authToken = localStorage.getItem("gpsToken");
             let authId = localStorage.getItem("gpsId");
 
             if (authToken) {
-                // Hide login button if a token exists
                 $("#loginBtn").addClass("d-none");
                 $("#logoutBtn").removeClass("d-none");
             } else {
-                // Show login modal if no token exists
                 $("#loginModal").modal("show");
             }
 
-            // Event listener for the login form submission
+            if ($('#sendDataCheckbox').is(':checked')) {
+                            startWatchingLocation();
+            }
+
             $("#loginForm").submit(function (event) {
                 event.preventDefault();
 
-                // Perform authentication (replace this with your actual authentication logic)
                 let email = $("#inputEmail").val();
                 let password = $("#inputPassword").val();
 
@@ -122,18 +121,15 @@
                     data: loginRequest,
                     contentType: 'application/json',
                     success: function (response) {
-                        // Assume authentication is successful and generate a sample token
                         let gpsToken = response.data.authenticate.token;
                         let gpsId = response.data.authenticate.id;
                         localStorage.setItem("gpsToken", gpsToken);
                         localStorage.setItem("gpsId", gpsId);
 
-                        // Hide the login modal and update buttons
                         $("#loginModal").modal("hide");
                         $("#loginBtn").addClass("d-none");
                         $("#logoutBtn").removeClass("d-none");
 
-                        // Start watching location if "Send Data to API" checkbox is checked
                         if ($('#sendDataCheckbox').is(':checked')) {
                             startWatchingLocation();
                         }
@@ -145,9 +141,7 @@
                 });
             });
 
-            // Event listener for the logout button
             $("#logoutBtn").click(function () {
-                // Remove the token from local storage and update buttons
                 localStorage.removeItem("gpsToken");
                 localStorage.removeItem("gpsId");
                 $("#loginBtn").removeClass("d-none");
@@ -155,7 +149,6 @@
                 stopWatchingLocation();
             });
 
-            // Function to start watching location changes
             function startWatchingLocation() {
                 if ("geolocation" in navigator) {
                     watchID = navigator.geolocation.watchPosition(function (position) {
@@ -163,38 +156,36 @@
                         var longitude = position.coords.longitude;
                         var speed = position.coords.speed;
 
-                        // Send data to API if the checkbox is checked
-                        if ($('#sendDataCheckbox').is(':checked')) {
-                            const mutation = `
-                                mutation {
-                                    insertPossition(model: {
-                                        latitude: ${latitude},
-                                        longitude: ${longitude},
-                                        speed: ${speed},
-                                        userId: "${authId}"
-                                    }) {
-                                        id
-                                    }
+                        const mutation = `
+                            mutation {
+                                insertPossition(model: {
+                                    latitude: ${latitude},
+                                    longitude: ${longitude},
+                                    speed: ${speed},
+                                    userId: "${authId}"
+                                }) {
+                                    id
                                 }
-                            `;
+                            }
+                        `;
 
-                            $.ajax({
-                                url: graphqlEndpoint,
-                                type: 'POST',
-                                headers: {
-                                    Authorization: `Bearer ` + authToken
-                                },
-                                data: JSON.stringify({ query: mutation }),
-                                contentType: 'application/json',
-                                success: function (response) {
-                                    console.log(`Mutation succeeded for pair: ${latitude}, ${longitude}`);
-                                    toastr.success("Data sent");
-                                },
-                                error: function (error) {
-                                    toastr.error(JSON.parse(error));
-                                }
-                            });
-                        }
+                        $.ajax({
+                            url: graphqlEndpoint,
+                            type: 'POST',
+                            headers: {
+                                Authorization: `Bearer ` + authToken
+                            },
+                            data: JSON.stringify({ query: mutation }),
+                            contentType: 'application/json',
+                            success: function (response) {
+                                console.log(`Mutation succeeded for pair: ${latitude}, ${longitude}`);
+                                toastr.success("Data sent");
+                            },
+                            error: function (error) {
+                                toastr.error(JSON.parse(error));
+                            }
+                        });
+
                     }, function (error) {
                         toastr.error(JSON.parse(error));
                     });
@@ -203,14 +194,12 @@
                 }
             }
 
-            // Function to stop watching location changes
             function stopWatchingLocation() {
                 if (watchID) {
                     navigator.geolocation.clearWatch(watchID);
                 }
             }
 
-            // Event listener for the wake lock checkbox
             $('#wakeLockCheckbox').change(function () {
                 if (this.checked) {
                     requestWakeLock();
